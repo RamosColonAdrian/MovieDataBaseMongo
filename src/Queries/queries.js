@@ -244,3 +244,35 @@ db.getCollection("movie_dataset").aggregate(
         "allowDiskUse" : false
     }
 );
+
+
+//Se necesita una coleccion temporal que muestre cada pelicula y la media de votos que tiene
+
+var mapFuncion = function () {
+
+  
+    emit(this.original_title, this.vote_average);
+}
+
+;
+
+var reduceFuncion = function (original_title, values) {
+
+    var sumVotes = 0;
+    for(let i= 0 ; i < values.length; ++i){
+    	sumVotes += values[i];
+    }
+
+    return sumVotes/values.length;
+};
+
+db.movie_dataset.mapReduce( 
+    mapFuncion,
+    reduceFuncion,
+    {out:"temp_values"}
+   
+ );
+
+db.temp_values.find().sort({value:-1}).pretty()
+
+db.temp_values.drop()
